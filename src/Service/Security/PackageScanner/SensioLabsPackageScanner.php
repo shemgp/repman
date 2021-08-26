@@ -53,7 +53,8 @@ final class SensioLabsPackageScanner implements PackageScanner
 
         try {
             $lockFiles = $this->extractLockFiles($this->findDistribution($package));
-            if ($lockFiles === []) {
+
+	    if ($lockFiles === []) {
                 $status = ScanResult::STATUS_NOT_AVAILABLE;
             }
 
@@ -117,12 +118,12 @@ final class SensioLabsPackageScanner implements PackageScanner
             [new PackageName($package->id()->toString(), (string) $package->name())]
         );
 
-        foreach ($providerData[$packageName] ?? [] as $packageData) {
+	    foreach ($providerData[$packageName] ?? [] as $packageData) {
             $packageVersion = $packageData['version_normalized']
                 ??
                 $this->versionParser->normalize($packageData['version']);
-            $packageDist = $packageData['dist'];
-            $reference = $packageDist['reference'] ?? $packageDist['shasum'];
+            $packageDist = $packageData['source']??[];
+            $reference = $packageDist['reference'] ?? $packageDist['shasum'] ?? [];
 
             if ($packageVersion === $normalizedVersion && isset($packageDist['url'], $reference)) {
                 $archiveType = $packageDist['type'];
@@ -132,7 +133,7 @@ final class SensioLabsPackageScanner implements PackageScanner
                     $normalizedVersion,
                     $reference,
                     $archiveType
-                );
+		        );
 
                 return $filename->getOrElseThrow(
                     new \RuntimeException("Distribution file for version $packageVersion not found")

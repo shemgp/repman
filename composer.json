@@ -15,7 +15,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.4.1",
+        "php": "^8.0",
         "ext-ctype": "*",
         "ext-curl": "*",
         "ext-iconv": "*",
@@ -25,19 +25,19 @@
         "ext-zip": "*",
         "async-aws/ses": "^1.4",
         "bitbucket/client": "^4.0",
-        "buddy-works/buddy-works-php-api": "^1.3",
+        "buddy-works/buddy-works-php-api": "^1.3.0.1",
         "buddy-works/oauth2-client": "^1.0",
         "cbschuld/browser.php": "^1.9",
         "clue/mq-react": "^1.2",
-        "composer/composer": "^1.10.22",
-        "composer/semver": "^1.5",
+        "composer/composer": "^2.0",
+        "composer/semver": "^3.0",
         "doctrine/doctrine-bundle": "^2.1",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.7",
         "excelwebzone/recaptcha-bundle": "^1.5",
         "knplabs/github-api": "^3.0",
         "knpuniversity/oauth2-client-bundle": "^2.0",
-        "league/commonmark": "^1.5",
+        "league/commonmark": "^2.0",
         "league/flysystem-aws-s3-v3": "^1.0",
         "league/flysystem-bundle": "^1.5",
         "league/flysystem-cached-adapter": "^1.1",
@@ -49,8 +49,8 @@
         "omines/oauth2-gitlab": "^3.2",
         "ramsey/uuid-doctrine": "^1.5",
         "react/http": "^1.0",
-        "sensio/framework-extra-bundle": "^5.5",
-        "sentry/sentry-symfony": "^3.4",
+        "sensio/framework-extra-bundle": "^6.0",
+        "sentry/sentry-symfony": "^4.0",
         "stevenmaguire/oauth2-bitbucket": "^3.0",
         "symfony/amazon-mailer": "*",
         "symfony/asset": "*",
@@ -90,7 +90,7 @@
         "coduo/php-matcher": "^4.0",
         "dama/doctrine-test-bundle": "^6.3",
         "doctrine/doctrine-fixtures-bundle": "^3.3",
-        "ekino/phpstan-banned-code": "^0.3.1",
+        "ekino/phpstan-banned-code": "^0.5",
         "fakerphp/faker": "^1.9",
         "friendsofphp/php-cs-fixer": "^2.16",
         "johnkary/phpunit-speedtrap": "^4.0",
@@ -185,5 +185,11 @@
             "rm -rf var/cache/prod",
             "bin/console cache:warmup --env=prod"
         ]
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/shemgp/buddy-works-php-api.git"
+        }
+    ]
 }

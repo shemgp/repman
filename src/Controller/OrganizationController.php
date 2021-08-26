@@ -9,6 +9,7 @@ use Buddy\Repman\Form\Type\Organization\ChangeAnonymousAccessType;
 use Buddy\Repman\Form\Type\Organization\ChangeNameType;
 use Buddy\Repman\Form\Type\Organization\GenerateTokenType;
 use Buddy\Repman\Message\Organization\ChangeAlias;
+use Buddy\Repman\Message\Organization\SynchronizePackage;
 use Buddy\Repman\Message\Organization\ChangeAnonymousAccess;
 use Buddy\Repman\Message\Organization\ChangeName;
 use Buddy\Repman\Message\Organization\GenerateToken;
@@ -33,6 +34,8 @@ use Buddy\Repman\Query\User\OrganizationQuery;
 use Buddy\Repman\Query\User\PackageQuery;
 use Buddy\Repman\Query\User\PackageQuery\Filter as PackageFilter;
 use Buddy\Repman\Security\Model\User;
+use Buddy\Repman\Service\Organization\PackageManager;
+
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -45,11 +48,13 @@ final class OrganizationController extends AbstractController
 {
     private PackageQuery $packageQuery;
     private OrganizationQuery $organizationQuery;
+    private PackageManager $packageManager;
 
-    public function __construct(PackageQuery $packageQuery, OrganizationQuery $organizationQuery)
+    public function __construct(PackageQuery $packageQuery, OrganizationQuery $organizationQuery, PackageManager $packageManager)
     {
         $this->packageQuery = $packageQuery;
         $this->organizationQuery = $organizationQuery;
+        $this->packageManager = $packageManager;
     }
 
     /**
@@ -179,6 +184,42 @@ final class OrganizationController extends AbstractController
             'package' => $package,
             'recentRequests' => $this->packageQuery->findRecentWebhookRequests($package->id()),
         ]);
+    }
+
+    /**
+     * @Route("/organization/{organization}/{token}/webhook", name="organization_webhook", methods={"GET","POST"}, requirements={"organization"="%organization_pattern%"})
+     */
+    public function organizationWebhook(Organization $organization, string $token, Request $request): Response
+    {
+        $validToken = $this->organizationQuery->findToken($organization->id(), $token)
+            ->getOrNull();
+        if ($validToken)
+        {
+            if ($request->isMethod(Request::METHOD_POST))
+            {
+                $input = json_decode($request->getContent(), true);
+                // do matching here depending on host that posts?
+                if (isset($input['repository']['full_name']))
+                {
+                    $packageNames = $this->packageQuery->getAllNames($organization->id());
+                    $package = null;
+                    foreach($packageNames as $searchPackage)
+                        if ($searchPackage->name() == $input['repository']['full_name'])
+                        {
+                            $package = $searchPackage;
+                            break;
+                        }
+                    if ($package)
+                    {
+                        $this->dispatchMessage(new SynchronizePackage($package->id()));
+                        $this->addFlash('success', sprintf('Package "%s" will be synchronized in background.', $package->name()));
+                    }
+                }
+            }
+        }
+        else
+            $this->addFlash('error', sprintf('Invalid token for %s.', $organization->name()));
+        return $this->redirectToRoute('organization_tokens', ['organization' => $organization->alias()]);
     }
 
     /**

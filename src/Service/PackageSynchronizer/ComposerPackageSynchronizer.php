@@ -116,6 +116,20 @@ final class ComposerPackageSynchronizer implements PackageSynchronizer
                         'stability' => $p->getStability(),
                     ];
                 }
+    		else if ($p->getSourceUrl() !== null) {
+                    $versions[] = [
+                        'organizationAlias' => $package->organizationAlias(),
+                        'packageName' => $p->getPrettyName(),
+                        'prettyVersion' => $p->getPrettyVersion(),
+                        'version' => $p->getVersion(),
+                        'ref' => $p->getSourceReference() ?? $p->getSourceSha1Checksum(),
+                        'sourceType' => $p->getSourceType(),
+                        'sourceUrl' => $p->getSourceUrl(),
+                        'authHeaders' => $this->getAuthHeaders($package),
+                        'releaseDate' => \DateTimeImmutable::createFromMutable($p->getReleaseDate() ?? new \DateTime()),
+                        'stability' => $p->getStability(),
+                    ];
+                }
             }
 
             usort($versions, fn ($item1, $item2) => $item2['releaseDate'] <=> $item1['releaseDate']);
@@ -128,7 +142,7 @@ final class ComposerPackageSynchronizer implements PackageSynchronizer
                     $version['packageName'],
                     $version['version'],
                     $version['ref'],
-                    $version['distType']
+        		    $version['distType'] ?? $version['sourceType']
                 );
 
                 if (
@@ -150,7 +164,7 @@ final class ComposerPackageSynchronizer implements PackageSynchronizer
                 }
 
                 $this->distStorage->download(
-                    $version['distUrl'],
+                    $version['sourceUrl'] ?? $version['distUrl'],
                     $dist,
                     $this->getAuthHeaders($package)
                 );

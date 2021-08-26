@@ -72,15 +72,21 @@ final class RepoController extends AbstractController
      *     name="repo_package_dist",
      *     host="{organization}{sep1}repo{sep2}{domain}",
      *     defaults={"domain":"%domain%","sep1"="%organization_separator%","sep2"="%domain_separator%"},
-     *     requirements={"package"="%package_name_pattern%","ref"="[a-f0-9]*?","type"="zip|tar","domain"="%domain%","sep1"="%organization_separator%","sep2"="%domain_separator%"},
+     *     requirements={"package"="%package_name_pattern%","ref"="[^\.]*","version"=".*","type"="zip|tar|git","domain"="%domain%","sep1"="%organization_separator%","sep2"="%domain_separator%"},
      *     methods={"GET"})
      * @Cache(public=false)
      */
     public function distribution(Organization $organization, string $package, string $version, string $ref, string $type): StreamedResponse
     {
+        // try if .zip will work
         $filename = $this->packageManager
             ->distFilename($organization->alias(), $package, $version, $ref, $type)
-            ->getOrElseThrow(new NotFoundHttpException('This distribution file can not be found or downloaded from origin url.'));
+            ->getOrNull();
+        // else try faked .git
+        if (!$filename)
+            $filename = $this->packageManager
+                ->distFilename($organization->alias(), $package, $version, $ref, $type=='zip'?'git':$type)
+                ->getOrElseThrow(new NotFoundHttpException('This distribution file can not be found or downloaded from origin url.'));
 
         return new StreamedResponse(function () use ($filename): void {
             $outputStream = \fopen('php://output', 'wb');
@@ -154,7 +160,7 @@ final class RepoController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        $response = (new JsonResponse($providerData))
+        $response = (new JsonResponse(['packages' => $providerData]))
             ->setLastModified($lastModified)
             ->setPrivate();
 

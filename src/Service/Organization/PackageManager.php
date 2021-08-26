@@ -50,6 +50,20 @@ class PackageManager
             $json = \unserialize(
                 (string) $this->repoFilesystem->read($filepath), ['allowed_classes' => false]
             );
+
+            foreach($json['packages'] as $packageKey => $packageValue)
+                foreach($packageValue as $versionKey => $versionValue)
+                    if (!isset($versionValue['dist']) && isset($versionValue['source']))
+                    {
+                        $dist = [
+                            'type' => 'zip',
+                            'url' => preg_replace('/^git@git.([^:]*):([^\/]*)\/([^\.]*)\.(.*)/',
+                                'https://'.$organizationAlias.'-repo.\1/dists/'.$versionValue['name'].'/'.$versionValue['version_normalized'].'/'.$versionValue['source']['reference'].'.\4', $versionValue['source']['url']),
+                            'reference' => $versionValue['source']['reference']
+                        ];
+                        $json['packages'][$packageKey][$versionKey]['dist'] = $dist;
+                    }
+
             $data[] = $json['packages'] ?? [];
         }
 

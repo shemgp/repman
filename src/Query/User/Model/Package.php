@@ -71,7 +71,7 @@ final class Package
 
     public function url(): string
     {
-        return $this->url;
+        return preg_replace('/^git@([^:]*):/', 'https://\1/', $this->url);
     }
 
     public function name(): ?string

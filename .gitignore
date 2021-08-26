@@ -41,3 +41,5 @@ docker-compose.*.yml
 /docker/nginx/ssl/private/*
 !/docker/nginx/ssl/private/.gitkeep
 ###< Docker ###
+
+.ftpconfig

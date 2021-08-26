@@ -7,7 +7,6 @@ namespace Buddy\Repman\Service;
 use Buddy\Repman\Entity\Organization\Package;
 use Buddy\Repman\Service\Dist\Storage;
 use League\CommonMark\CommonMarkConverter;
-use League\CommonMark\Environment;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
 use League\CommonMark\MarkdownConverterInterface;
@@ -21,26 +20,10 @@ final class ReadmeExtractor
     {
         $this->distStorage = $distStorage;
 
-        $environment = Environment::createGFMEnvironment();
-        $environment->addExtension(new ExternalLinkExtension());
-        $environment->addExtension(new HeadingPermalinkExtension());
-
         $this->markdownConverter = new CommonMarkConverter(
             [
                 'allow_unsafe_links' => false,
-                'external_link' => [
-                    'open_in_new_window' => true,
-                    'nofollow' => '',
-                    'noopener' => 'external',
-                    'noreferrer' => 'external',
-                ],
-                'heading_permalink' => [
-                    'symbol' => '',
-                    'html_class' => '',
-                    'title' => '',
-                ],
             ],
-            $environment
         );
     }
 
@@ -66,7 +49,7 @@ final class ReadmeExtractor
             for ($i = 0; $i < $zip->numFiles; ++$i) {
                 $filename = (string) $zip->getNameIndex($i);
                 if (preg_match('/^([^\/]+\/)?README.md$/i', $filename) === 1) {
-                    return $this->markdownConverter->convertToHtml((string) $zip->getFromIndex($i));
+                    return $this->markdownConverter->convertToHtml((string) $zip->getFromIndex($i))->getContent();
                 }
             }
         } finally {
