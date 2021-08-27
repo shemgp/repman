@@ -164,7 +164,7 @@ final class ComposerPackageSynchronizer implements PackageSynchronizer
                 }
 
                 $this->distStorage->download(
-                    $version['sourceUrl'] ?? $version['distUrl'],
+                    $version['sourceUrl'].' '.$version['prettyVersion'] ?? $version['distUrl'],
                     $dist,
                     $this->getAuthHeaders($package)
                 );
