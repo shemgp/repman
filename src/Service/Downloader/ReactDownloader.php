@@ -44,7 +44,7 @@ final class ReactDownloader implements Downloader
                 $url = preg_replace('/https:\/\/([^\/]*)\//', 'git@\1:', $url);
                 $temp_clone = tempnam("/tmp", "repman-git-");
                 exec("rm -Rf $temp_clone");
-                exec("git archive --remote $url -o $temp_clone.zip HEAD");
+                exec("git archive -o $temp_clone.zip --remote $url");
                 $stream = fopen($temp_clone.'.zip', 'r');
                 exec("rm -Rf $temp_clone'.zip");
             }
