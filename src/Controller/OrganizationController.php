@@ -198,21 +198,26 @@ final class OrganizationController extends AbstractController
             if ($request->isMethod(Request::METHOD_POST))
             {
                 $input = json_decode($request->getContent(), true);
+
                 // do matching here depending on host that posts?
-                if (isset($input['repository']['full_name']))
+                if (isset($input['repository']['clone_url']))
                 {
                     $packageNames = $this->packageQuery->getAllNames($organization->id());
                     $package = null;
                     foreach($packageNames as $searchPackage)
-                        if ($searchPackage->name() == $input['repository']['full_name'])
+                    {
+                        if ($this->packageQuery->getById($searchPackage->id())->get()->url() == $input['repository']['clone_url'])
                         {
                             $package = $searchPackage;
                             break;
                         }
+                    }
                     if ($package)
                     {
+                        $message = sprintf('Package "%s" will be synchronized in background.', $package->name());
                         $this->dispatchMessage(new SynchronizePackage($package->id()));
-                        $this->addFlash('success', sprintf('Package "%s" will be synchronized in background.', $package->name()));
+                        $this->addFlash('success', $message);
+                        return new JsonResponse(['status' => true, 'message' => $message]);
                     }
                 }
             }
