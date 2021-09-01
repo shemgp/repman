@@ -34,7 +34,6 @@ use Buddy\Repman\Query\User\OrganizationQuery;
 use Buddy\Repman\Query\User\PackageQuery;
 use Buddy\Repman\Query\User\PackageQuery\Filter as PackageFilter;
 use Buddy\Repman\Security\Model\User;
-use Buddy\Repman\Service\Organization\PackageManager;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -48,13 +47,11 @@ final class OrganizationController extends AbstractController
 {
     private PackageQuery $packageQuery;
     private OrganizationQuery $organizationQuery;
-    private PackageManager $packageManager;
 
-    public function __construct(PackageQuery $packageQuery, OrganizationQuery $organizationQuery, PackageManager $packageManager)
+    public function __construct(PackageQuery $packageQuery, OrganizationQuery $organizationQuery)
     {
         $this->packageQuery = $packageQuery;
         $this->organizationQuery = $organizationQuery;
-        $this->packageManager = $packageManager;
     }
 
     /**
@@ -184,47 +181,6 @@ final class OrganizationController extends AbstractController
             'package' => $package,
             'recentRequests' => $this->packageQuery->findRecentWebhookRequests($package->id()),
         ]);
-    }
-
-    /**
-     * @Route("/organization/{organization}/{token}/webhook", name="organization_webhook", methods={"GET","POST"}, requirements={"organization"="%organization_pattern%"})
-     */
-    public function organizationWebhook(Organization $organization, string $token, Request $request): Response
-    {
-        $validToken = $this->organizationQuery->findToken($organization->id(), $token)
-            ->getOrNull();
-        if ($validToken)
-        {
-            if ($request->isMethod(Request::METHOD_POST))
-            {
-                $input = json_decode($request->getContent(), true);
-
-                // do matching here depending on host that posts?
-                if (isset($input['repository']['clone_url']))
-                {
-                    $packageNames = $this->packageQuery->getAllNames($organization->id());
-                    $package = null;
-                    foreach($packageNames as $searchPackage)
-                    {
-                        if ($this->packageQuery->getById($searchPackage->id())->get()->url() == $input['repository']['clone_url'])
-                        {
-                            $package = $searchPackage;
-                            break;
-                        }
-                    }
-                    if ($package)
-                    {
-                        $message = sprintf('Package "%s" will be synchronized in background.', $package->name());
-                        $this->dispatchMessage(new SynchronizePackage($package->id()));
-                        $this->addFlash('success', $message);
-                        return new JsonResponse(['status' => true, 'message' => $message]);
-                    }
-                }
-            }
-        }
-        else
-            $this->addFlash('error', sprintf('Invalid token for %s.', $organization->name()));
-        return $this->redirectToRoute('organization_tokens', ['organization' => $organization->alias()]);
     }
 
     /**
