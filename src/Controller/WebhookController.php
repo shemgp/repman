@@ -52,7 +52,8 @@ final class WebhookController extends AbstractController
                     $package = null;
                     foreach($packageNames as $searchPackage)
                     {
-                        if ($this->packageQuery->getById($searchPackage->id())->get()->url() == $input['repository']['clone_url'])
+                        $url = $this->packageQuery->getById($searchPackage->id())->get()->url();
+                        if ($url == $input['repository']['clone_url'])
                         {
                             $package = $searchPackage;
                             break;

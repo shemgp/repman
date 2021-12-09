@@ -29,8 +29,8 @@ final class Version20200811170234 extends AbstractMigration
             $this->addSql(
                 'UPDATE organization_package_version SET stability = :stability WHERE id = :id',
                 [
-                    ':id' => $data['id'],
-                    ':stability' => VersionParser::parseStability($data['version']),
+                    'id' => $data['id'],
+                    'stability' => VersionParser::parseStability($data['version']),
                 ]
             );
         }
