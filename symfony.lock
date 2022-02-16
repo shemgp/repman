@@ -5,6 +5,9 @@
     "async-aws/ses": {
         "version": "1.4.0"
     },
+    "aws/aws-crt-php": {
+        "version": "v1.0.2"
+    },
     "aws/aws-sdk-php": {
         "version": "3.158.21"
     },
