@@ -91,14 +91,6 @@ final class WebhookController extends AbstractController
 
     private MessageBusInterface $messageBus;
 
-    public function __construct(
-        WebhookRequests $webhookRequests,
-        MessageBusInterface $messageBus
-    ) {
-        $this->webhookRequests = $webhookRequests;
-        $this->messageBus = $messageBus;
-    }
-
     /**
      * @Route("/hook/{package}", name="package_webhook", methods={"POST"})
      */
